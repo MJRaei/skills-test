@@ -1,6 +1,13 @@
 ---
 name: databridge
-description: Top-level overview of the DataBridge scientific-data skill set. A collection of curated material-science datasets hosted in the MongoDB, queryable by AI agents via helper scripts. Use when the user asks what DataBridge is, what data is available, how to set it up, or wants help choosing which dataset to query. Trigger phrases: databridge, what is databridge, what datasets do you have, available datasets, databridge skills, material science data, mongodb dataset catalog, list datasets.
+description: >-
+  Top-level overview of the DataBridge scientific-data skill set. A collection
+  of curated material-science datasets hosted in the MongoDB, queryable by AI
+  agents via helper scripts. Use when the user asks what DataBridge is, what
+  data is available, how to set it up, or wants help choosing which dataset
+  to query. Trigger phrases: databridge, what is databridge, what datasets do
+  you have, available datasets, databridge skills, material science data,
+  mongodb dataset catalog, list datasets.
 metadata:
   version: 1.0.0
 ---

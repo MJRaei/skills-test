@@ -1,6 +1,12 @@
 ---
 name: databridge-core
-description: Query and ingest orchestration for DataBridge datasets stored in MongoDB. Required prerequisite for every DataBridge dataset skill. Use this skill's decision procedure before running any query, and on first session to verify setup. Trigger phrases: databridge, databridge-core, query dataset, mongodb databridge, run query, dataset health check, databridge setup, databridge doctor.
+description: >-
+  Query and ingest orchestration for DataBridge datasets stored in MongoDB.
+  Required prerequisite for every DataBridge dataset skill. Use this skill's
+  decision procedure before running any query, and on first session to verify
+  setup. Trigger phrases: databridge, databridge-core, query dataset, mongodb
+  databridge, run query, dataset health check, databridge setup, databridge
+  doctor.
 metadata:
   version: 1.0.0
   requires:

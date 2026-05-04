@@ -1,6 +1,17 @@
 ---
 name: solid-state-synthesis
-description: Solid-state synthesis dataset with 80,806 deduplicated reaction records extracted from scientific literature. Each record links a target material to its precursors, balanced reaction equations, NLP-extracted synthesis conditions (temperature, time, atmosphere), Materials Project mappings, and any identified impurity phases. Use this dataset to query solid-state synthesis routes, precursor combinations, synthesis conditions, target material formulas, impurity phases, and balanced reaction equations. Trigger phrases: solid-state synthesis, solid state reactions, SS reactions, precursor materials, synthesis conditions, target material, impurity phase, heating conditions, sintering, ball milling, mp_id, mp_eabovehull, conditions_forDOI, target_reaction, impurity_reaction.
+description: >-
+  Solid-state synthesis dataset with 80,806 deduplicated reaction records
+  extracted from scientific literature. Each record links a target material to
+  its precursors, balanced reaction equations, NLP-extracted synthesis
+  conditions (temperature, time, atmosphere), Materials Project mappings, and
+  any identified impurity phases. Use this dataset to query solid-state
+  synthesis routes, precursor combinations, synthesis conditions, target
+  material formulas, impurity phases, and balanced reaction equations. Trigger
+  phrases: solid-state synthesis, solid state reactions, SS reactions, precursor
+  materials, synthesis conditions, target material, impurity phase, heating
+  conditions, sintering, ball milling, mp_id, mp_eabovehull, conditions_forDOI,
+  target_reaction, impurity_reaction.
 source:
   provider: literature_extraction
   url: null

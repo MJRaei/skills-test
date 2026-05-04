@@ -1,6 +1,20 @@
 ---
 name: magnetic-anisotropy-materials
-description: Magnetic anisotropy dataset from nemad with 33,916 records covering magnetic properties (coercivity, saturation magnetization, remanence, anisotropy constants K1/K2, BH_Max, anisotropy field/energy), structural descriptors (crystal structure, lattice parameter, space group), thermal transitions (Curie, Néel, Curie-Weiss), and categorical metadata (magnet type, magnetic type, material type, substrate, thickness) for bulk, thin-film, nanoparticle, and other material forms. Use when querying magnetic anisotropy, hard vs soft magnets, coercivity, saturation magnetization, or thin-film / nanoparticle magnetic data. Trigger phrases: magnetic anisotropy, coercivity, saturation magnetization, remanence, BH_Max, anisotropy constant, anisotropy field, anisotropy energy, Curie temperature, Néel temperature, hard magnet, soft magnet, ferromagnetic, antiferromagnetic, ferrimagnetic, nemad, crystal structure, space group, lattice parameter, thin film magnet, bulk magnet, nanoparticle magnet.
+description: >-
+  Magnetic anisotropy dataset from nemad with 33,916 records covering magnetic
+  properties (coercivity, saturation magnetization, remanence, anisotropy
+  constants K1/K2, BH_Max, anisotropy field/energy), structural descriptors
+  (crystal structure, lattice parameter, space group), thermal transitions
+  (Curie, Néel, Curie-Weiss), and categorical metadata (magnet type, magnetic
+  type, material type, substrate, thickness) for bulk, thin-film, nanoparticle,
+  and other material forms. Use when querying magnetic anisotropy, hard vs soft
+  magnets, coercivity, saturation magnetization, or thin-film / nanoparticle
+  magnetic data. Trigger phrases: magnetic anisotropy, coercivity, saturation
+  magnetization, remanence, BH_Max, anisotropy constant, anisotropy field,
+  anisotropy energy, Curie temperature, Néel temperature, hard magnet, soft
+  magnet, ferromagnetic, antiferromagnetic, ferrimagnetic, nemad, crystal
+  structure, space group, lattice parameter, thin film magnet, bulk magnet,
+  nanoparticle magnet.
 source:
   provider: nemad
   url: https://nemad.org/

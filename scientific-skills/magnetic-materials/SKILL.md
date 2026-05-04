@@ -1,6 +1,16 @@
 ---
 name: magnetic-materials
-description: Magnetic materials dataset from nemad with 33,668 records describing magnetic properties (Curie/Néel/Curie-Weiss temperatures, coercivity, magnetization, remanence, susceptibility, magnetic moment) and crystallographic data (crystal structure, lattice parameters, space group) for chemical formulas extracted from publications. Use when querying magnetic transition temperatures, magnetic property values, crystal/space-group structures, or material formulas. Trigger phrases: magnetic materials, nemad, Curie temperature, Tc, Néel temperature, Tn, Curie-Weiss, θp, coercivity, remanence, magnetization, magnetic moment, susceptibility, space group, crystal structure, lattice parameters.
+description: >-
+  Magnetic materials dataset from nemad with 33,668 records describing magnetic
+  properties (Curie/Néel/Curie-Weiss temperatures, coercivity, magnetization,
+  remanence, susceptibility, magnetic moment) and crystallographic data (crystal
+  structure, lattice parameters, space group) for chemical formulas extracted
+  from publications. Use when querying magnetic transition temperatures,
+  magnetic property values, crystal/space-group structures, or material
+  formulas. Trigger phrases: magnetic materials, nemad, Curie temperature, Tc,
+  Néel temperature, Tn, Curie-Weiss, θp, coercivity, remanence, magnetization,
+  magnetic moment, susceptibility, space group, crystal structure, lattice
+  parameters.
 source:
   provider: nemad
   url: https://nemad.org/
