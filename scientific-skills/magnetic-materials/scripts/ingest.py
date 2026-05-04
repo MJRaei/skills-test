@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+"""Ingest a magnetic_materials.csv export into MongoDB.
+
+Usage:
+    python scripts/ingest.py <path-to-magnetic_materials.csv>
+
+Behavior:
+    - Validates the file exists and has the expected columns.
+    - Drops any previous `magnetic_materials` collection (idempotent reload).
+    - Reads the CSV in chunks with pandas, preserving mixed-type columns.
+    - Inserts records into MongoDB, replacing NaN with None for string columns
+      (matches the existing databridge CsvParser behavior so all SKILL.md
+      gotchas remain valid).
+    - Registers the dataset in ~/.databridge/state.json on success.
+
+Prints a structured JSON summary on stdout. Exit 0 on success, 1 on error.
+"""
+
+# --- Re-exec under the DataBridge-managed venv -------------------------------
+import os
+import sys
+from pathlib import Path
+
+_VENV_PY = Path.home() / ".databridge" / "venv" / "bin" / "python"
+if _VENV_PY.exists() and Path(sys.executable).resolve() != _VENV_PY.resolve():
+    os.execv(str(_VENV_PY), [str(_VENV_PY), *sys.argv])
+
+# --- Real imports ------------------------------------------------------------
+import argparse
+import json
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "databridge-core" / "scripts"))
+
+import pandas as pd  # noqa: E402
+
+from lib import (  # noqa: E402
+    error_envelope,
+    get_db,
+    register_dataset,
+    sha256_of_file,
+)
+
+
+SKILL_NAME = "magnetic-materials"
+COLLECTION = "magnetic_materials"
+SOURCE_PROVIDER = "nemad"
+ACCESS_TIER = "gated_registration"
+CHUNK_SIZE = 5000
+
+EXPECTED_COLUMNS = {
+    "Coercivity", "Crystal_Structure", "Curie", "Curie(Tc)", "Curie_Weiss",
+    "Curie_Weiss(θp)", "DOI", "Experimental", "Lattice_Parameters",
+    "Lattice_Structure", "Magnetic_Moment", "Magnetization", "Material_Name",
+    "Neel", "Neel(Tn)", "New_Column_Concatenated", "Remanence", "Space_Group",
+    "Susceptibility",
+}
+
+
+def _fail(exc: BaseException, hint: str = "") -> None:
+    sys.stdout.write(json.dumps(error_envelope(exc, hint or None)))
+    sys.stdout.write("\n")
+    sys.exit(1)
+
+
+def _validate(path: Path) -> None:
+    if not path.exists():
+        raise FileNotFoundError(f"CSV file not found at {path}")
+    if path.suffix.lower() != ".csv":
+        raise ValueError(f"Expected a .csv file, got {path.suffix}")
+
+    header = pd.read_csv(path, nrows=0).columns
+    missing = EXPECTED_COLUMNS - set(header)
+    if missing:
+        raise ValueError(
+            f"CSV is missing expected columns: {sorted(missing)}. "
+            "The nemad export format may have changed."
+        )
+
+
+def _ingest(path: Path) -> int:
+    db = get_db()
+    coll = db[COLLECTION]
+    coll.drop()
+
+    inserted = 0
+    for chunk in pd.read_csv(path, chunksize=CHUNK_SIZE):
+        # Replace NaN with None; for pure-object columns this preserves BSON
+        # null semantics, while float columns keep NaN (serialized as BSON
+        # NaN double). Matches the existing databridge CsvParser exactly.
+        records = chunk.where(pd.notna(chunk), None).to_dict("records")
+        if records:
+            coll.insert_many(records, ordered=False)
+            inserted += len(records)
+    return inserted
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("csv_path", type=Path, help="Path to magnetic_materials.csv")
+    args = parser.parse_args()
+
+    try:
+        _validate(args.csv_path)
+    except (FileNotFoundError, ValueError) as e:
+        _fail(e, hint="See scripts/SOURCE.md for download instructions.")
+
+    try:
+        row_count = _ingest(args.csv_path)
+    except Exception as e:
+        _fail(
+            e,
+            hint="Check that MongoDB is reachable; run databridge-core/scripts/doctor.py.",
+        )
+
+    try:
+        checksum = sha256_of_file(args.csv_path)
+        register_dataset(
+            skill_name=SKILL_NAME,
+            collection=COLLECTION,
+            row_count=row_count,
+            checksum=checksum,
+            source=SOURCE_PROVIDER,
+            access=ACCESS_TIER,
+        )
+    except Exception as e:
+        _fail(e, hint="Ingest succeeded but state registration failed; re-run to retry.")
+
+    summary = {
+        "ok": True,
+        "skill": SKILL_NAME,
+        "collection": COLLECTION,
+        "row_count": row_count,
+        "checksum": checksum,
+    }
+    sys.stdout.write(json.dumps(summary, indent=2))
+    sys.stdout.write("\n")
+
+
+if __name__ == "__main__":
+    main()
