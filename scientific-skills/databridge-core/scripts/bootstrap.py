@@ -69,6 +69,32 @@ def _prompt_uri() -> str:
     return answer or default
 
 
+def _mongo_start_hint() -> str:
+    if sys.platform == "win32":
+        return (
+            "  Windows options:\n"
+            "    - MongoDB service:  net start MongoDB\n"
+            "      (if installed via https://www.mongodb.com/try/download/community)\n"
+            "    - Docker:           docker run -d -p 27017:27017 mongo\n"
+            "    - MongoDB Atlas:    use a free cloud cluster at https://cloud.mongodb.com\n"
+            "      (paste the Atlas connection string when prompted for the URI)"
+        )
+    elif sys.platform == "darwin":
+        return (
+            "  macOS options:\n"
+            "    - Homebrew:  brew services start mongodb-community\n"
+            "    - Docker:    docker run -d -p 27017:27017 mongo\n"
+            "    - Atlas:     free cloud cluster at https://cloud.mongodb.com"
+        )
+    else:
+        return (
+            "  Linux options:\n"
+            "    - systemd:  sudo systemctl start mongod\n"
+            "    - Docker:   docker run -d -p 27017:27017 mongo\n"
+            "    - Atlas:    free cloud cluster at https://cloud.mongodb.com"
+        )
+
+
 def _ping_mongo(uri: str) -> None:
     print("Verifying connection ...")
     ping_code = (
@@ -92,7 +118,8 @@ def _ping_mongo(uri: str) -> None:
             print(result.stderr.strip(), file=sys.stderr)
         sys.exit(
             f"error: could not reach MongoDB at {uri}.\n"
-            "       Start the server (brew / docker / atlas) and re-run this script."
+            f"       Start MongoDB, then re-run this script.\n\n"
+            f"{_mongo_start_hint()}"
         )
 
 
@@ -110,6 +137,10 @@ def main() -> None:
     _create_venv()
     _install_packages()
 
+    print(
+        "\nPrerequisite: MongoDB must be running before the next step.\n"
+        f"{_mongo_start_hint()}\n"
+    )
     uri = _prompt_uri()
     _ping_mongo(uri)
     _write_env_file(uri)
