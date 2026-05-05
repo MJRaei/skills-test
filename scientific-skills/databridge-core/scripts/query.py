@@ -56,7 +56,9 @@ def _dump(results: Any, max_chars: int) -> None:
 
 
 def _load_json_arg(value: str) -> str:
-    """If value starts with '@', treat the rest as a file path and read it."""
+    """Load JSON from a string, file (@path), or stdin (-)."""
+    if value == "-":
+        return sys.stdin.read()
     if value.startswith("@"):
         path = Path(value[1:]).expanduser()
         return path.read_text(encoding="utf-8")
@@ -67,7 +69,15 @@ def _cmd_aggregate(args: argparse.Namespace) -> None:
     try:
         pipeline = json.loads(_load_json_arg(args.pipeline))
     except json.JSONDecodeError as e:
-        _fail(e, hint="--pipeline must be a JSON array of aggregation stages.")
+        _fail(
+            e,
+            hint=(
+                "--pipeline must be a valid JSON array of aggregation stages. "
+                "If you see this on Windows, shell quoting likely mangled $-prefixed operators "
+                "(e.g. $match became empty). Write the JSON to a file and pass "
+                "--pipeline @path/to/file.json, or pipe it with --pipeline -."
+            ),
+        )
 
     try:
         results = list(get_db()[args.collection].aggregate(pipeline))
@@ -81,7 +91,14 @@ def _cmd_records(args: argparse.Namespace) -> None:
     try:
         filt = json.loads(_load_json_arg(args.filter))
     except json.JSONDecodeError as e:
-        _fail(e, hint="--filter must be a valid JSON object.")
+        _fail(
+            e,
+            hint=(
+                "--filter must be a valid JSON object. "
+                "On Windows, pass --filter @path/to/file.json or --filter - (stdin) "
+                "to avoid shell quoting issues with $-prefixed operators."
+            ),
+        )
 
     try:
         cursor = get_db()[args.collection].find(filt).limit(args.limit)
@@ -120,7 +137,11 @@ def _cmd_multi(args: argparse.Namespace) -> None:
     except (json.JSONDecodeError, ValueError) as e:
         _fail(
             e,
-            hint='--spec must be a JSON array of {"collection", "pipeline" or "filter", "limit"}',
+            hint=(
+                '--spec must be a JSON array of {"collection", "pipeline" or "filter", "limit"}. '
+                "On Windows, pass --spec @path/to/file.json or --spec - (stdin) "
+                "to avoid shell quoting issues with $-prefixed operators."
+            ),
         )
 
     # Order-preserving parallel execution.
@@ -142,13 +163,13 @@ def _build_parser() -> argparse.ArgumentParser:
 
     agg = sub.add_parser("aggregate", help="Run an aggregation pipeline on one collection.")
     agg.add_argument("--collection", required=True)
-    agg.add_argument("--pipeline", required=True, help="JSON array of stages, or @path/to/file.json")
+    agg.add_argument("--pipeline", required=True, help="JSON array of stages, @path/to/file.json, or - (stdin). Prefer @file on Windows.")
     agg.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS)
     agg.set_defaults(fn=_cmd_aggregate)
 
     rec = sub.add_parser("records", help="Fetch filtered records from one collection.")
     rec.add_argument("--collection", required=True)
-    rec.add_argument("--filter", default="{}", help="JSON filter document, or @path/to/file.json")
+    rec.add_argument("--filter", default="{}", help="JSON filter document, @path/to/file.json, or - (stdin). Prefer @file on Windows.")
     rec.add_argument("--limit", type=int, default=10)
     rec.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS)
     rec.set_defaults(fn=_cmd_records)
@@ -157,7 +178,7 @@ def _build_parser() -> argparse.ArgumentParser:
     mul.add_argument(
         "--spec",
         required=True,
-        help='JSON array of {"collection", "pipeline" or "filter", "limit"}, or @path/to/file.json',
+        help='JSON array of {"collection", "pipeline" or "filter", "limit"}, @path/to/file.json, or - (stdin). Prefer @file on Windows.',
     )
     mul.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS)
     mul.set_defaults(fn=_cmd_multi)

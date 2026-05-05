@@ -104,25 +104,31 @@ drops and reloads the collection cleanly.
 MongoDB aggregation operators (`$match`, `$group`, `$expr`, …) contain `$`,
 which PowerShell expands as a variable sigil in double-quoted strings
 (undefined variables silently become empty strings, mangling the JSON).
+Git Bash on Windows has a separate argument-mangling layer that can also
+swallow stdout entirely.
 
-**Use `@filepath` on all platforms.** Write the pipeline/filter/spec JSON to
-a temp file and prefix the path with `@`:
+**Use `@filepath` or stdin (`-`) on all platforms.** Never pass inline JSON
+as a shell argument — it is only safe on bash/zsh.
 
 ```powershell
-# PowerShell
+# PowerShell — @filepath
 '[{"$match":{"Experimental":true}},{"$count":"n"}]' |
     Out-File "$env:TEMP\q.json" -Encoding utf8
 python <skill>/scripts/query.py aggregate --collection foo --pipeline "@$env:TEMP\q.json"
 ```
 
 ```bash
-# bash / zsh
+# bash / zsh — @filepath
 python <skill>/scripts/query.py aggregate --collection foo \
     --pipeline @/tmp/q.json   # q.json written beforehand
+
+# bash / zsh — stdin (no temp file needed)
+echo '[{"$match":{"Experimental":true}},{"$count":"n"}]' | \
+    python <skill>/scripts/query.py aggregate --collection foo --pipeline -
 ```
 
-Single-quoted inline JSON works on bash/zsh but fails on PowerShell.
-`@filepath` is the only pattern that is reliable everywhere.
+`@filepath` and stdin (`-`) are the only patterns reliable everywhere.
+Single-quoted inline JSON works on bash/zsh only — avoid it in examples.
 
 ## Privacy + data handling
 

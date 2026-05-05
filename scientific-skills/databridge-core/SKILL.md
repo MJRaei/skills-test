@@ -82,21 +82,45 @@ actual collections in Mongo.
 Three subcommands. All emit JSON to stdout. On failure they print
 `{"error": "...", "hint": "..."}` and exit 1.
 
+> **Always use `@filepath` or stdin (`-`) for `--pipeline`, `--filter`, and `--spec`.**
+> Never pass inline JSON as a shell argument — MongoDB operators like `$match` contain `$`,
+> which PowerShell silently expands as variable sigils, mangling the JSON before Python sees it.
+> `@filepath` is the only pattern that works on every platform without quoting issues.
+
 ### `aggregate` (single-dataset, agent-written pipeline)
 
+Write the pipeline JSON to a temp file, then pass `@path`:
+
 ```bash
+# bash / zsh / PowerShell — works everywhere
 python scripts/query.py aggregate \
     --collection <mongo_collection_name> \
-    --pipeline '<json array of aggregation stages>' \
+    --pipeline @/tmp/pipeline.json \
     [--max-chars 10000]
+```
+
+Or pipe via stdin (also cross-platform):
+
+```bash
+echo '[{"$count":"n"}]' | python scripts/query.py aggregate \
+    --collection <mongo_collection_name> --pipeline -
 ```
 
 Example — count experimental materials with Curie T > 500 K:
 
 ```bash
+# 1. Write pipeline to a file
+cat > /tmp/pipeline.json << 'EOF'
+[
+  {"$match": {"$expr": {"$and": [{"$isNumber": "$Curie"}, {"$gt": ["$Curie", 500]}]}, "Experimental": true}},
+  {"$count": "n"}
+]
+EOF
+
+# 2. Query (works on Windows too)
 python scripts/query.py aggregate \
     --collection magnetic_materials \
-    --pipeline '[{"$match":{"$expr":{"$and":[{"$isNumber":"$Curie"},{"$gt":["$Curie",500]}]},"Experimental":true}},{"$count":"n"}]'
+    --pipeline @/tmp/pipeline.json
 ```
 
 ### `records` (filter + limit, raw documents)
@@ -104,17 +128,23 @@ python scripts/query.py aggregate \
 ```bash
 python scripts/query.py records \
     --collection <mongo_collection_name> \
-    --filter '<json>' \
+    --filter @/tmp/filter.json \
     [--limit 10] [--max-chars 10000]
 ```
 
 ### `multi` (parallel reads across collections, single shell call)
 
 ```bash
-python scripts/query.py multi --spec '[
-  {"collection": "magnetic_materials",   "pipeline": [{"$count":"n"}]},
-  {"collection": "magnetic_anisotropy",  "filter": {"Magnet_type":"Hard"}, "limit": 3}
-]'
+python scripts/query.py multi --spec @/tmp/spec.json
+```
+
+Example `spec.json`:
+
+```json
+[
+  {"collection": "magnetic_materials",  "pipeline": [{"$count": "n"}]},
+  {"collection": "magnetic_anisotropy", "filter": {"Magnet_type": "Hard"}, "limit": 3}
+]
 ```
 
 Returns an order-preserved JSON array `[{collection, ok, result|error}, ...]`.
@@ -189,11 +219,18 @@ Examples: `FCC` vs `fcc` vs `Face-centered cubic`; `Fd-3m` vs `Fd3m`;
 
 ### 5. Shell quoting
 
-MongoDB operators like `$match` contain `$`, which some shells expand as
-variable sigils. Prefer the `@filepath` pattern — write the JSON to a temp
-file and pass `--pipeline @/path/to/file.json` — it works on every platform
-without quoting issues. See the `databridge` skill for platform-specific
-guidance.
+MongoDB operators like `$match` contain `$`, which PowerShell expands as variable sigils
+in double-quoted strings (undefined variables silently become empty strings, producing
+invalid JSON). Git Bash on Windows has a separate argument-mangling layer that can also
+swallow output entirely.
+
+Two safe patterns that work on every platform:
+
+- **`@filepath`** — write JSON to a temp file, pass `--pipeline @/tmp/file.json`
+- **stdin (`-`)** — pipe JSON: `echo '[...]' | python query.py aggregate --collection foo --pipeline -`
+
+Inline single-quoted JSON (`--pipeline '[...]'`) works on bash/zsh **only**. Never use it
+as the primary form in examples or agent-generated commands.
 
 ### 6. BSON serialization
 
