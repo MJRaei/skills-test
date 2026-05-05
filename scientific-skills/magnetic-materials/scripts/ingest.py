@@ -21,7 +21,9 @@ import os
 import sys
 from pathlib import Path
 
-_VENV_PY = Path.home() / ".databridge" / "venv" / "bin" / "python"
+_venv_scripts = "Scripts" if sys.platform == "win32" else "bin"
+_venv_exe = "python.exe" if sys.platform == "win32" else "python"
+_VENV_PY = Path.home() / ".databridge" / "venv" / _venv_scripts / _venv_exe
 if _VENV_PY.exists() and Path(sys.executable).resolve() != _VENV_PY.resolve():
     os.execv(str(_VENV_PY), [str(_VENV_PY), *sys.argv])
 

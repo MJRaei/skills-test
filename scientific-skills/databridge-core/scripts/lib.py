@@ -43,7 +43,7 @@ def load_env_file(path: Path = ENV_FILE) -> None:
     """Populate os.environ from a KEY=VALUE .env file. No-op if file missing."""
     if not path.exists():
         return
-    for line in path.read_text().splitlines():
+    for line in path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
@@ -109,7 +109,7 @@ def load_state() -> Dict[str, Any]:
     if not STATE_FILE.exists():
         return _empty_state()
     try:
-        return json.loads(STATE_FILE.read_text())
+        return json.loads(STATE_FILE.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return _empty_state()
 
@@ -118,7 +118,7 @@ def save_state(state: Dict[str, Any]) -> None:
     """Atomically write state.json so concurrent readers never see a half-written file."""
     STATE_DIR.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
-        mode="w", dir=STATE_DIR, prefix=".state.", suffix=".tmp", delete=False
+        mode="w", encoding="utf-8", dir=STATE_DIR, prefix=".state.", suffix=".tmp", delete=False
     ) as tmp:
         json.dump(state, tmp, indent=2, default=str)
         tmp_path = Path(tmp.name)
