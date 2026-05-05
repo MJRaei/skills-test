@@ -55,9 +55,17 @@ def _dump(results: Any, max_chars: int) -> None:
     sys.stdout.write("\n")
 
 
+def _load_json_arg(value: str) -> str:
+    """If value starts with '@', treat the rest as a file path and read it."""
+    if value.startswith("@"):
+        path = Path(value[1:]).expanduser()
+        return path.read_text(encoding="utf-8")
+    return value
+
+
 def _cmd_aggregate(args: argparse.Namespace) -> None:
     try:
-        pipeline = json.loads(args.pipeline)
+        pipeline = json.loads(_load_json_arg(args.pipeline))
     except json.JSONDecodeError as e:
         _fail(e, hint="--pipeline must be a JSON array of aggregation stages.")
 
@@ -71,7 +79,7 @@ def _cmd_aggregate(args: argparse.Namespace) -> None:
 
 def _cmd_records(args: argparse.Namespace) -> None:
     try:
-        filt = json.loads(args.filter)
+        filt = json.loads(_load_json_arg(args.filter))
     except json.JSONDecodeError as e:
         _fail(e, hint="--filter must be a valid JSON object.")
 
@@ -106,7 +114,7 @@ def _run_one(spec: dict) -> dict:
 
 def _cmd_multi(args: argparse.Namespace) -> None:
     try:
-        specs = json.loads(args.spec)
+        specs = json.loads(_load_json_arg(args.spec))
         if not isinstance(specs, list) or not specs:
             raise ValueError("--spec must be a non-empty JSON array")
     except (json.JSONDecodeError, ValueError) as e:
@@ -134,13 +142,13 @@ def _build_parser() -> argparse.ArgumentParser:
 
     agg = sub.add_parser("aggregate", help="Run an aggregation pipeline on one collection.")
     agg.add_argument("--collection", required=True)
-    agg.add_argument("--pipeline", required=True, help="JSON array of stages")
+    agg.add_argument("--pipeline", required=True, help="JSON array of stages, or @path/to/file.json")
     agg.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS)
     agg.set_defaults(fn=_cmd_aggregate)
 
     rec = sub.add_parser("records", help="Fetch filtered records from one collection.")
     rec.add_argument("--collection", required=True)
-    rec.add_argument("--filter", default="{}", help="JSON filter document")
+    rec.add_argument("--filter", default="{}", help="JSON filter document, or @path/to/file.json")
     rec.add_argument("--limit", type=int, default=10)
     rec.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS)
     rec.set_defaults(fn=_cmd_records)
@@ -149,7 +157,7 @@ def _build_parser() -> argparse.ArgumentParser:
     mul.add_argument(
         "--spec",
         required=True,
-        help='JSON array of {"collection", "pipeline" or "filter", "limit"}',
+        help='JSON array of {"collection", "pipeline" or "filter", "limit"}, or @path/to/file.json',
     )
     mul.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS)
     mul.set_defaults(fn=_cmd_multi)

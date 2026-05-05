@@ -99,6 +99,31 @@ registered in `state.json` so future questions skip straight to querying.
 All ingestion is idempotent — re-running `ingest.py` with a fresh file
 drops and reloads the collection cleanly.
 
+## Shell quoting across platforms
+
+MongoDB aggregation operators (`$match`, `$group`, `$expr`, …) contain `$`,
+which PowerShell expands as a variable sigil in double-quoted strings
+(undefined variables silently become empty strings, mangling the JSON).
+
+**Use `@filepath` on all platforms.** Write the pipeline/filter/spec JSON to
+a temp file and prefix the path with `@`:
+
+```powershell
+# PowerShell
+'[{"$match":{"Experimental":true}},{"$count":"n"}]' |
+    Out-File "$env:TEMP\q.json" -Encoding utf8
+python <skill>/scripts/query.py aggregate --collection foo --pipeline "@$env:TEMP\q.json"
+```
+
+```bash
+# bash / zsh
+python <skill>/scripts/query.py aggregate --collection foo \
+    --pipeline @/tmp/q.json   # q.json written beforehand
+```
+
+Single-quoted inline JSON works on bash/zsh but fails on PowerShell.
+`@filepath` is the only pattern that is reliable everywhere.
+
 ## Privacy + data handling
 
 - Your MongoDB URI and any credentials live in `~/.databridge.env` on your

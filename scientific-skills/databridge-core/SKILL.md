@@ -189,12 +189,11 @@ Examples: `FCC` vs `fcc` vs `Face-centered cubic`; `Fd-3m` vs `Fd3m`;
 
 ### 5. Shell quoting
 
-Nested `$` signs in a pipeline passed via `python -c "..."` lead to
-backslash soup. Two reliable patterns:
-
-- Use single quotes around the whole `--pipeline` value (most shells).
-- Or write the JSON to a temp file and pass it:
-  `--pipeline "$(cat /tmp/pipeline.json)"`
+MongoDB operators like `$match` contain `$`, which some shells expand as
+variable sigils. Prefer the `@filepath` pattern — write the JSON to a temp
+file and pass `--pipeline @/path/to/file.json` — it works on every platform
+without quoting issues. See the `databridge` skill for platform-specific
+guidance.
 
 ### 6. BSON serialization
 
