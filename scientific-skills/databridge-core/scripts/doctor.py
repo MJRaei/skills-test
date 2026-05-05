@@ -87,7 +87,7 @@ def main() -> None:
             e,
             hint=(
                 "MongoDB appears unreachable. Run "
-                "databridge-core/scripts/bootstrap.sh to (re)configure, "
+                "databridge-core/scripts/bootstrap.py to (re)configure, "
                 f"or confirm the server at {get_mongo_uri()} is running."
             ),
         )

@@ -52,7 +52,7 @@ header with `head -1 magnetic_anisotropy_materials.csv` and update
 
 **Connection refused / timeout** — run
 `databridge-core/scripts/doctor.py`. If it also fails, re-run
-`bash databridge-core/scripts/bootstrap.sh`.
+`python databridge-core/scripts/bootstrap.py`.
 
 **UnicodeDecodeError** — the nemad export is UTF-8; if the file isn't,
 re-export. The µ / Å / θ characters in unit strings require UTF-8.

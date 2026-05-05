@@ -15,7 +15,7 @@ Failure: prints {"error": "...", "hint": "..."} to stdout and exits 1.
 
 # --- Re-exec under the DataBridge-managed venv -------------------------------
 # If the user's shell called us with their system Python but a venv exists
-# from bootstrap.sh, switch to the venv Python so pymongo/pandas are always
+# from bootstrap.py, switch to the venv Python so pymongo/pandas are always
 # importable. This block has no imports beyond the stdlib and must stay at
 # the top, before any project-level imports.
 import os

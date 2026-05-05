@@ -64,7 +64,7 @@ supports both).
 or ask for a streaming (`ijson`) variant.
 
 **Connection refused / timeout** — run `databridge-core/scripts/doctor.py`
-or re-run `bash databridge-core/scripts/bootstrap.sh`.
+or re-run `python databridge-core/scripts/bootstrap.py`.
 
 ## License + attribution
 

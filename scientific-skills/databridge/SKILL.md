@@ -29,8 +29,8 @@ tools the agent actually calls.
    `databridge-core/SKILL.md` was loaded and show the user the exact command,
    for example:
 
-   ```bash
-   bash /absolute/path/to/databridge-core/scripts/bootstrap.sh
+   ```
+   python /absolute/path/to/databridge-core/scripts/bootstrap.py
    ```
 
    Never use a relative path — the user's terminal is not necessarily inside

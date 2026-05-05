@@ -48,7 +48,7 @@ column in a newer export. Report the issue so we can update the schema in
 this SKILL.md.
 
 **"Connection refused on MongoDB"** — run `databridge-core/scripts/doctor.py`
-to see the state, or re-run `bash databridge-core/scripts/bootstrap.sh` if
+to see the state, or re-run `python databridge-core/scripts/bootstrap.py` if
 the URI was wrong.
 
 **Export is JSON/Excel instead of CSV** — the ingest script assumes CSV.

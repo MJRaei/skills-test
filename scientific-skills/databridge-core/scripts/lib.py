@@ -23,7 +23,7 @@ try:
     from pymongo.database import Database
 except ImportError as e:
     raise SystemExit(
-        "pymongo is not installed. Run databridge-core/scripts/bootstrap.sh "
+        "pymongo is not installed. Run databridge-core/scripts/bootstrap.py "
         "once to set up the isolated environment."
     ) from e
 
@@ -157,7 +157,7 @@ def register_dataset(
 
 
 def mark_setup_complete(mongo_uri: str, db_name: str) -> None:
-    """Called by bootstrap.sh / doctor.py after a successful ping."""
+    """Called by bootstrap.py / doctor.py after a successful ping."""
     state = load_state()
     state["setup_complete"] = True
     state["mongo"]["db"] = db_name

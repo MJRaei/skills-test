@@ -26,22 +26,28 @@ Users install DataBridge skills via `npx skills add` and then run one command
 to provision everything the scripts need.
 
 **When showing bootstrap instructions, always derive the absolute path from the
-location of this SKILL.md file and show it explicitly.** `bootstrap.sh` lives
-at `<directory-containing-this-SKILL.md>/scripts/bootstrap.sh`. For example,
+location of this SKILL.md file and show it explicitly.** `bootstrap.py` lives
+at `<directory-containing-this-SKILL.md>/scripts/bootstrap.py`. For example,
 if this file was loaded from `/home/user/project/.agents/skills/databridge-core/SKILL.md`,
 tell the user to run:
 
-```bash
-bash /home/user/project/.agents/skills/databridge-core/scripts/bootstrap.sh
+```
+python /home/user/project/.agents/skills/databridge-core/scripts/bootstrap.py
 ```
 
-Never show a bare relative path like `bash scripts/bootstrap.sh` — the user's
+This command works on Windows (CMD, PowerShell, Git Bash) and Unix without changes.
+
+Never show a bare relative path like `python scripts/bootstrap.py` — the user's
 terminal is not necessarily inside the skill directory.
 
 It creates an isolated Python venv at `~/.databridge/venv`, installs `pymongo`
 and `pandas`, prompts for the MongoDB URI (default
 `mongodb://localhost:27017/databridge`), pings the server, writes
 `~/.databridge.env`, and initializes `~/.databridge/state.json`.
+
+`bootstrap.py` requires only the system Python 3.11+ that the user already has
+— no shell, no Git Bash, no WSL. The same `python` command works on Windows
+(CMD / PowerShell / Git Bash) and Unix unchanged.
 
 If the agent sees `setup_complete: false` (or the file missing), it should
 tell the user to run bootstrap (with the absolute path), then stop.
@@ -59,7 +65,7 @@ Then branch:
 
 | Observation | Action |
 |---|---|
-| File missing OR `setup_complete` is false | Tell user: run `bash <absolute-path-to-this-skill>/scripts/bootstrap.sh` (derive the absolute path from the location of this SKILL.md). Stop. |
+| File missing OR `setup_complete` is false | Tell user: run `python <absolute-path-to-this-skill>/scripts/bootstrap.py` (derive the absolute path from the location of this SKILL.md). Stop. |
 | Target dataset NOT in `datasets_loaded` | Open that skill's `scripts/SOURCE.md`, relay acquisition steps to the user, wait. Then run `python <skill>/scripts/ingest.py <path>`. |
 | Target dataset present | Skip all checks, call `query.py`. |
 
@@ -206,7 +212,7 @@ them back into `$expr` pipelines directly.
 - `query.py` — read-only. Safe to auto-run.
 - Dataset `ingest.py` scripts — write to MongoDB (NOT to the filesystem).
   Approve once per dataset on first load.
-- `bootstrap.sh` — installs Python packages into `~/.databridge/venv` and
+- `bootstrap.py` — installs Python packages into `~/.databridge/venv` and
   writes `~/.databridge.env` + `~/.databridge/state.json`. Approve once
   at first setup.
 
@@ -236,6 +242,6 @@ Single source of truth. Fields:
 }
 ```
 
-Writers: `bootstrap.sh` creates it, each dataset's `ingest.py` appends its
+Writers: `bootstrap.py` creates it, each dataset's `ingest.py` appends its
 entry on success (via `lib.register_dataset`), `doctor.py` refreshes on
 staleness. Agents should treat it as read-only.
