@@ -23,11 +23,20 @@ encodes gotchas shared across all datasets.
 ## First-use setup (one-time per machine)
 
 Users install DataBridge skills via `npx skills add` and then run one command
-to provision everything the scripts need:
+to provision everything the scripts need.
+
+**When showing bootstrap instructions, always derive the absolute path from the
+location of this SKILL.md file and show it explicitly.** `bootstrap.sh` lives
+at `<directory-containing-this-SKILL.md>/scripts/bootstrap.sh`. For example,
+if this file was loaded from `/home/user/project/.agents/skills/databridge-core/SKILL.md`,
+tell the user to run:
 
 ```bash
-bash scripts/bootstrap.sh
+bash /home/user/project/.agents/skills/databridge-core/scripts/bootstrap.sh
 ```
+
+Never show a bare relative path like `bash scripts/bootstrap.sh` — the user's
+terminal is not necessarily inside the skill directory.
 
 It creates an isolated Python venv at `~/.databridge/venv`, installs `pymongo`
 and `pandas`, prompts for the MongoDB URI (default
@@ -35,7 +44,7 @@ and `pandas`, prompts for the MongoDB URI (default
 `~/.databridge.env`, and initializes `~/.databridge/state.json`.
 
 If the agent sees `setup_complete: false` (or the file missing), it should
-tell the user to run bootstrap, then stop.
+tell the user to run bootstrap (with the absolute path), then stop.
 
 ## Fast-path decision procedure
 
@@ -50,7 +59,7 @@ Then branch:
 
 | Observation | Action |
 |---|---|
-| File missing OR `setup_complete` is false | Tell user: run `bash scripts/bootstrap.sh`. Stop. |
+| File missing OR `setup_complete` is false | Tell user: run `bash <absolute-path-to-this-skill>/scripts/bootstrap.sh` (derive the absolute path from the location of this SKILL.md). Stop. |
 | Target dataset NOT in `datasets_loaded` | Open that skill's `scripts/SOURCE.md`, relay acquisition steps to the user, wait. Then run `python <skill>/scripts/ingest.py <path>`. |
 | Target dataset present | Skip all checks, call `query.py`. |
 

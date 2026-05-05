@@ -24,14 +24,18 @@ tools the agent actually calls.
 1. **MongoDB 7.0+** running locally, in Docker, or remotely (Atlas).
 2. **Python 3.11+** — used only by DataBridge's isolated venv, does not touch
    the user's system packages.
-3. **One-time bootstrap:**
+3. **One-time bootstrap:** the `databridge-core` skill is installed in the
+   same directory as this one. Derive the absolute path from where the
+   `databridge-core/SKILL.md` was loaded and show the user the exact command,
+   for example:
 
    ```bash
-   bash databridge-core/scripts/bootstrap.sh
+   bash /absolute/path/to/databridge-core/scripts/bootstrap.sh
    ```
 
-   Creates `~/.databridge/venv`, prompts for the MongoDB URI, writes
-   `~/.databridge.env`, and initializes `~/.databridge/state.json`.
+   Never use a relative path — the user's terminal is not necessarily inside
+   the skill directory. Creates `~/.databridge/venv`, prompts for the MongoDB
+   URI, writes `~/.databridge.env`, and initializes `~/.databridge/state.json`.
 
 No LLM API key is required — the agent that's already running in your IDE
 (Cursor, Claude Code, Codex, Gemini CLI, etc.) handles all reasoning.
